@@ -1,6 +1,8 @@
 import numpy as np
+from numpy import linalg as LA
 from mat import mat
 from utils import in_half_plane, s_norm, Rz, angle, i2p
+import math
 
 
 class Algorithms:
@@ -35,10 +37,32 @@ class Algorithms:
         Copyright 2018 Utah State University
         """
 
+       # Unpack inputs
+       p_n, p_e, p_d = p[0], p[1], p[2]
+       q_n, q_e, q_d = q[0], q[1], q[2]
+       r_n, r_e, r_d = n[0], n[1], n[2]
+        
+
+
         if flag == 1:  # straight line
             pass
 
-            # TODO Algorithm 3 goes here
+            # Calculations for h_c
+            epi = [(p_n - r_n), (p_e - r_e), (p_d - r_d)]
+            k = [0, 0, 1] # Unit down vector (NED Inertial Frame)
+            n = np.cross(q, k)/LA.norm(np.cross(q, k)) # Unit vector normal to q-k plane
+            s_i = epi - np.dot(epi, n)*n # Position vector of MAV projected to q-k plane
+            s_n, s_e, s_d = s_i[0], s_i[1], s_i[2] # Unpack s_i vector
+            h_c = -r_d + math.sqrt(s_n**2 + s_e**2)*q_d/math.sqrt(q_n**2 + q_e**2) # Equation 10.5
+            
+            # Algorithm 3
+            chi_q = math.atan2(q_e, q_n)
+            while (chi_q - chi) < -math.pi:
+                chi_q = chi_q + 2*math.pi
+            while (chi_q - chi) > math.pi:
+                chi_q = chi_q - 2*math.pi
+            e_crosstrack = -math.sin(chi_q)*(p_n - r_n) + math.cos(chi_q)*(p_e - r_e)
+            chi_c = chi_q - chi_inf*(2/math.pi)*math.atan(k_path*e_crosstrack)
 
         elif flag == 2:  # orbit following
             pass
