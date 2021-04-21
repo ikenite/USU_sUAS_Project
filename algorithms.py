@@ -37,15 +37,15 @@ class Algorithms:
         Copyright 2018 Utah State University
         """
 
-       # Unpack inputs
+       # Unpack universal variables
        p_n, p_e, p_d = p[0], p[1], p[2]
-       q_n, q_e, q_d = q[0], q[1], q[2]
-       r_n, r_e, r_d = n[0], n[1], n[2]
-        
-
 
         if flag == 1:  # straight line
             pass
+
+            # Unpack line path variables
+            q_n, q_e, q_d = q[0], q[1], q[2]
+            r_n, r_e, r_d = n[0], n[1], n[2]
 
             # Calculations for h_c
             epi = [(p_n - r_n), (p_e - r_e), (p_d - r_d)]
@@ -67,7 +67,19 @@ class Algorithms:
         elif flag == 2:  # orbit following
             pass
 
-            # TODO Algorithm 4 goes here
+            # Unpack orbit path variables
+            c_n, c_e, c_d = c[0], c[1], c[2]
+
+            # Algorithm 4
+            h_c = -c_d
+            d = math.sqrt((p_n - c_n)**2 + (p_e - c_e)**2)
+            phi = math.atan2((p_e - c_e),(p_n - c_n))
+            while (phi-chi) < -math.pi:
+                phi = phi + 2*math.pi
+            while (phi-chi) > math.pi:
+                phi = phi - 2*math.pi
+            chi_c = phi + lamb*((math.pi/2) + math.atan(k_orbit*((d-rho)/rho)))
+            e_crosstrack = d - rho
 
         else:
             raise Exception("Invalid path type")
