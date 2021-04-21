@@ -37,8 +37,8 @@ class Algorithms:
         Copyright 2018 Utah State University
         """
 
-       # Unpack universal variables
-       p_n, p_e, p_d = p[0], p[1], p[2]
+        # Unpack universal variables
+        p_n, p_e, p_d = p[0], p[1], p[2]
 
         if flag == 1:  # straight line
             pass
