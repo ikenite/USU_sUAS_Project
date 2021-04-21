@@ -41,7 +41,6 @@ class Algorithms:
         p_n, p_e, p_d = p[0], p[1], p[2]
 
         if flag == 1:  # straight line
-            pass
 
             # Unpack line path variables
             q_n, q_e, q_d = q[0], q[1], q[2]
@@ -65,7 +64,6 @@ class Algorithms:
             chi_c = chi_q - chi_inf*(2/math.pi)*math.atan(k_path*e_crosstrack)
 
         elif flag == 2:  # orbit following
-            pass
 
             # Unpack orbit path variables
             c_n, c_e, c_d = c[0], c[1], c[2]
