@@ -38,19 +38,23 @@ class Algorithms:
         """
 
         # Unpack universal variables
-        p_n, p_e, p_d = p[0], p[1], p[2]
-
+        P = np.squeeze(np.asarray(p))
+        p_n, p_e, p_d = P[0], P[1], P[2]
+        
         if flag == 1:  # straight line
 
             # Unpack line path variables
-            q_n, q_e, q_d = q[0], q[1], q[2]
-            r_n, r_e, r_d = n[0], n[1], n[2]
+            Q = np.squeeze(np.asarray(q))
+            q_n, q_e, q_d = Q[0], Q[1], Q[2]
+            R = np.squeeze(np.asarray(r))
+            r_n, r_e, r_d = R[0], R[1], R[2] 
 
             # Calculations for h_c
             epi = [(p_n - r_n), (p_e - r_e), (p_d - r_d)]
-            k = [0, 0, 1] # Unit down vector (NED Inertial Frame)
-            n = np.cross(q, k)/LA.norm(np.cross(q, k)) # Unit vector normal to q-k plane
-            s_i = epi - np.dot(epi, n)*n # Position vector of MAV projected to q-k plane
+            EPI = np.squeeze(np.asarray(epi))
+            k = np.array([0, 0, 1]) # Unit down vector (NED Inertial Frame)
+            n = np.cross(Q, k)/LA.norm(np.cross(Q, k)) # Unit vector normal to q-k plane
+            s_i = epi - np.dot(EPI, n)*n # Position vector of MAV projected to q-k plane
             s_n, s_e, s_d = s_i[0], s_i[1], s_i[2] # Unpack s_i vector
             h_c = -r_d + math.sqrt(s_n**2 + s_e**2)*q_d/math.sqrt(q_n**2 + q_e**2) # Equation 10.5
             
@@ -66,8 +70,9 @@ class Algorithms:
         elif flag == 2:  # orbit following
 
             # Unpack orbit path variables
-            c_n, c_e, c_d = c[0], c[1], c[2]
-
+            C = np.squeeze(np.asarray(c))
+            c_n, c_e, c_d = C[0], C[1], C[2]
+            
             # Algorithm 4
             h_c = -c_d
             d = math.sqrt((p_n - c_n)**2 + (p_e - c_e)**2)
