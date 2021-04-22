@@ -261,7 +261,59 @@ class Algorithms:
         Copyright 2018 Utah State University
         """
 
-        # TODO Algorithm 7 goes here
+        #Unpack variables
+        e_s = np.array([1, 0, 0])
+        P_s = np.squeeze(np.asarray(p_s))
+        p_s_n, p_s_e, p_s_d = P_s[0], P_s[1], P_s[2]
+        P_e = np.squeeze(np.asarray(p_e))
+        p_e_n, p_e_e, p_e_d = P_e[0], P_e[1], P_e[2]
+
+        # Algorithm 7
+
+        # Require ||p_s - p_e|| >= 3R
+        R_check = np.array([p_s_n-p_e_n, p_s_e-p_e_e]) 
+        assert LA.norm(R_check) >= 3*R
+
+        pi = math.pi
+
+        # Compute circle centers
+        c_chi_s = math.cos(chi_s)
+        s_chi_s = math.sin(chi_s)
+        c_chi_e = math.cos(chi_e)
+        s_chi_e = math.sin(chi_e)
+        c_rs = p_s + R*Rz(pi/2)*mat([[c_chi_s], [s_chi_s], [0]])
+        c_ls = p_s + R*Rz(-pi/2)*mat([[c_chi_s], [s_chi_s], [0]])
+        c_re = p_e + R*Rz(pi/2)*mat([[c_chi_e], [s_chi_e], [0]])
+        c_le = p_e + R*Rz(-pi/2)*mat([[c_chi_e], [s_chi_e], [0]])
+
+        # ... convert to arrays...
+        C_rs = np.squeeze(np.asarray(c_rs))
+        C_ls = np.squeeze(np.asarray(c_ls))
+        C_re = np.squeeze(np.asarray(c_re))
+        C_le = np.squeeze(np.asarray(c_le))
+
+        # Compute path lengths
+
+        # ... Case 1: R-S-R
+        th = np.angle(C_le - C_rs)
+        L1 = LA.norm(C_rs - C_re) \
+            + R*(2*pi + (th - pi/2) % (2*pi) - (chi_s - pi/2) % (2*pi)) % (2*pi) \
+            + R*(2*pi + (chi_e - pi/2) % (2*pi) - (th - pi/2) % (2*pi)) % (2*pi)   
+
+        # ... Case 2: R-S-L
+        th = np.angle(C_le - C_rs)
+        ell = LA.norm(C_le - C_rs)
+        th2 = th - pi/2 + math.asin(2*R/ell)
+        if ~np.isreal(th2):
+            L2 = math.nan
+        else:
+            L2 = math.sqrt(ell**2 - 4*(R**2)) \
+                + R*(2*pi + th2 % (2*pi) - (chi_s - pi/2) % (2*pi)) % (2*pi) \
+                + R*(2*pi + (th2 + pi) % (2*pi) - (chi_e + pi/2) % (2*pi)) % (2*pi)  
+
+        # ... Case 3: L-S-R
+
+        # ... Case 4: L-S-L
 
         # package output into DubinsParameters class
         dp = DubinsParameters()
