@@ -10,7 +10,8 @@ class Algorithms:
         self.i = 0
         self.state = 0
 
-    def pathFollower(self, flag, r, q, p, chi, chi_inf, k_path, c, rho, lamb, k_orbit):
+    def pathFollower(self, flag, r, q, p, chi, chi_inf,
+                     k_path, c, rho, lamb, k_orbit):
         """
         Input:
             flag = 1 for straight line, 2 for orbit
@@ -33,38 +34,49 @@ class Algorithms:
         Example Usage
             e_crosstrack, chi_c, h_c = pathFollower(path)
 
-        Reference: Beard, Small Unmanned Aircraft, Chapter 10, Algorithms 3 and 4
+        Reference: Beard, Small Unmanned Aircraft,
+                   Chapter 10, Algorithms 3 and 4
         Copyright 2018 Utah State University
         """
 
         # Unpack universal variables
         P = np.squeeze(np.asarray(p))
         p_n, p_e, p_d = P[0], P[1], P[2]
-        
+
         if flag == 1:  # straight line
 
             # Unpack line path variables
             Q = np.squeeze(np.asarray(q))
             q_n, q_e, q_d = Q[0], Q[1], Q[2]
             R = np.squeeze(np.asarray(r))
-            r_n, r_e, r_d = R[0], R[1], R[2] 
+            r_n, r_e, r_d = R[0], R[1], R[2]
 
             # Calculations for h_c
             epi = [(p_n - r_n), (p_e - r_e), (p_d - r_d)]
             EPI = np.squeeze(np.asarray(epi))
-            k = np.array([0, 0, 1]) # Unit down vector (NED Inertial Frame)
-            n = np.cross(Q, k)/LA.norm(np.cross(Q, k)) # Unit vector normal to q-k plane
-            s_i = epi - np.dot(EPI, n)*n # Position vector of MAV projected to q-k plane
-            s_n, s_e, s_d = s_i[0], s_i[1], s_i[2] # Unpack s_i vector
-            h_c = -r_d + math.sqrt(s_n**2 + s_e**2)*q_d/math.sqrt(q_n**2 + q_e**2) # Equation 10.5
-            
+            k = np.array([0, 0, 1])  # Unit down vector (NED Inertial Frame)
+
+            # ... Unit vector normal to q-k plane
+            n = np.cross(Q, k)/LA.norm(np.cross(Q, k))
+
+            # ... Position vector of MAV projected to q-k plane
+            s_i = epi - np.dot(EPI, n)*n
+
+            # ... Unpack s_i vector
+            s_n, s_e, s_d = s_i[0], s_i[1], s_i[2]
+
+            # ... Equation 10.5
+            h_c = -r_d + (math.sqrt(s_n**2 + s_e**2)*q_d /
+                          math.sqrt(q_n**2 + q_e**2))
+
             # Algorithm 3
             chi_q = math.atan2(q_e, q_n)
             while (chi_q - chi) < -math.pi:
                 chi_q = chi_q + 2*math.pi
             while (chi_q - chi) > math.pi:
                 chi_q = chi_q - 2*math.pi
-            e_crosstrack = -math.sin(chi_q)*(p_n - r_n) + math.cos(chi_q)*(p_e - r_e)
+            e_crosstrack = (-math.sin(chi_q)*(p_n - r_n) +
+                            math.cos(chi_q)*(p_e - r_e))
             chi_c = chi_q - chi_inf*(2/math.pi)*math.atan(k_path*e_crosstrack)
 
         elif flag == 2:  # orbit following
@@ -72,11 +84,11 @@ class Algorithms:
             # Unpack orbit path variables
             C = np.squeeze(np.asarray(c))
             c_n, c_e, c_d = C[0], C[1], C[2]
-            
+
             # Algorithm 4
             h_c = -c_d
             d = math.sqrt((p_n - c_n)**2 + (p_e - c_e)**2)
-            phi = math.atan2((p_e - c_e),(p_n - c_n))
+            phi = math.atan2((p_e - c_e), (p_n - c_n))
             while (phi-chi) < -math.pi:
                 phi = phi + 2*math.pi
             while (phi-chi) > math.pi:
@@ -179,7 +191,7 @@ class Algorithms:
             self.state = 1
 
             # Check size of waypoints matrix
-            m, N = w.shape  # Where 'N' is the number of waypoints and 'm' dimensions
+            m, N = w.shape  # 'N' is number of waypoints and 'm' dimensions
             assert N >= 3
             assert m == 3
         else:
@@ -261,8 +273,8 @@ class Algorithms:
         Copyright 2018 Utah State University
         """
 
-        #Unpack variables
-        e_s = np.array([1, 0, 0])
+        # Unpack variables
+        e_s = mat([[1], [0], [0]]).T
         P_s = np.squeeze(np.asarray(p_s))
         p_s_n, p_s_e, p_s_d = P_s[0], P_s[1], P_s[2]
         P_e = np.squeeze(np.asarray(p_e))
@@ -271,7 +283,7 @@ class Algorithms:
         # Algorithm 7
 
         # Require ||p_s - p_e|| >= 3R
-        R_check = np.array([p_s_n-p_e_n, p_s_e-p_e_e]) 
+        R_check = np.array([p_s_n-p_e_n, p_s_e-p_e_e])
         assert LA.norm(R_check) >= 3*R
 
         pi = math.pi
@@ -281,10 +293,10 @@ class Algorithms:
         s_chi_s = math.sin(chi_s)
         c_chi_e = math.cos(chi_e)
         s_chi_e = math.sin(chi_e)
-        c_rs = p_s + R*Rz(pi/2)*mat([[c_chi_s], [s_chi_s], [0]])
-        c_ls = p_s + R*Rz(-pi/2)*mat([[c_chi_s], [s_chi_s], [0]])
-        c_re = p_e + R*Rz(pi/2)*mat([[c_chi_e], [s_chi_e], [0]])
-        c_le = p_e + R*Rz(-pi/2)*mat([[c_chi_e], [s_chi_e], [0]])
+        c_rs = p_s + R*Rz(pi/2)*mat([[c_chi_s], [s_chi_s], [0]]).T
+        c_ls = p_s + R*Rz(-pi/2)*mat([[c_chi_s], [s_chi_s], [0]]).T
+        c_re = p_e + R*Rz(pi/2)*mat([[c_chi_e], [s_chi_e], [0]]).T
+        c_le = p_e + R*Rz(-pi/2)*mat([[c_chi_e], [s_chi_e], [0]]).T
 
         # ... convert to arrays...
         C_rs = np.squeeze(np.asarray(c_rs))
@@ -296,9 +308,11 @@ class Algorithms:
 
         # ... Case 1: R-S-R
         th = np.angle(C_le - C_rs)
-        L1 = LA.norm(C_rs - C_re) \
-            + R*(2*pi + (th - pi/2) % (2*pi) - (chi_s - pi/2) % (2*pi)) % (2*pi) \
-            + R*(2*pi + (chi_e - pi/2) % (2*pi) - (th - pi/2) % (2*pi)) % (2*pi)   
+        L1 = (LA.norm(C_rs - C_re)
+              + R*(2*pi + (th - pi/2) % (2*pi)
+              - (chi_s - pi/2) % (2*pi)) % (2*pi)
+              + R*(2*pi + (chi_e - pi/2) % (2*pi)
+              - (th - pi/2) % (2*pi)) % (2*pi))
 
         # ... Case 2: R-S-L
         th = np.angle(C_le - C_rs)
@@ -307,18 +321,116 @@ class Algorithms:
         if ~np.isreal(th2):
             L2 = math.nan
         else:
-            L2 = math.sqrt(ell**2 - 4*(R**2)) \
-                + R*(2*pi + th2 % (2*pi) - (chi_s - pi/2) % (2*pi)) % (2*pi) \
-                + R*(2*pi + (th2 + pi) % (2*pi) - (chi_e + pi/2) % (2*pi)) % (2*pi)  
+            L2 = (math.sqrt(ell**2 - 4*(R**2))
+                  + R*(2*pi + th2 % (2*pi)
+                       - (chi_s - pi/2) % (2*pi)) % (2*pi)
+                  + R*(2*pi + (th2 + pi) % (2*pi)
+                       - (chi_e + pi/2) % (2*pi)) % (2*pi))
 
         # ... Case 3: L-S-R
+        th = np.angle(C_re - C_ls)
+        ell = np.norm(C_re - C_ls)
+        th2 = math.acos(2*R/ell)
+        if ~np.isreal(th2):
+            L3 = math.nan
+        else:
+            L3 = (math.sqrt(ell**2 - 4*(R**2))
+                  + R*(2*pi + (chi_s + pi/2) % (2*pi)
+                       - (th + th2) % (2*pi)) % (2*pi)
+                  + R*(2*pi + (chi_e - pi/2) % (2*pi)
+                       - (th + th2 - pi/2) % (2*pi)) % (2*pi))
 
         # ... Case 4: L-S-L
+        th = np.angle(C_le - C_ls)
+        L4 = (np.norm(C_ls - C_le)
+              + R*(2*pi + (chi_s + pi/2) % (2*pi)
+                   - (th + pi/2) % (2*pi)) % (2*pi)
+              + R*(2*pi + (th + pi/2) % (2*pi)
+                   - (chi_e + pi/2) % (2*pi)) % (2*pi))
+
+        # Define parameters for minimum length path
+
+        c_s = mat([[math.nan], [math.nan], [math.nan]]).T
+        lamb_s = math.nan
+        c_e = mat([[math.nan], [math.nan], [math.nan]]).T
+        lamb_e = math.nan
+        q_1 = mat([[math.nan], [math.nan], [math.nan]]).T
+        z_1 = mat([[math.nan], [math.nan], [math.nan]]).T
+        z_2 = mat([[math.nan], [math.nan], [math.nan]]).T
+
+        L_list = [L1, L2, L3, L4]
+        L_min = min(L_list)
+
+        if L_min == L1:
+            i_min = 1
+            c_s = c_rs
+            lamb_s = 1
+            c_e = c_re
+            lamb_e = 1
+            q_1 = (c_e - c_s)/np.norm(C_re - C_rs)
+            z_1 = c_s + R*Rz(-pi/2)*q_1
+            z_2 = c_e + R*Rz(-pi/2)*q_1
+
+        elif L_min == L2:
+            i_min = 2
+            c_s = c_rs
+            lamb_s = 1
+            c_e = c_le
+            lamb_e = -1
+            ell = np.norm(C_le - C_rs)
+            th = np.angle(C_le - C_rs)
+            th2 = th - pi/2 + math.asin(2*R/ell)
+            q_1 = Rz(th2+pi/2)*e_s
+            z_1 = c_s + R*Rz(th2)*e_s
+            z_2 = c_e + R*Rz(th2 + pi)*e_s
+
+        elif L_min == L3:
+            i_min = 3
+            c_s = c_ls
+            lamb_s = -1
+            c_e = c_re
+            lamb_e = 1
+            ell = np.norm(C_re - C_ls)
+            th = np.angle(C_re - C_ls)
+            th2 = math.acos(2*R/ell)
+            q_1 = Rz(th+th2-pi/2)*e_s
+            z_1 = c_s + R*Rz(th + th2)*e_s
+            z_2 = c_e + R*Rz(th + th2 - pi)*e_s
+
+        elif L_min == L4:
+            i_min = 4
+            c_s = c_ls
+            lamb_s = -1
+            c_e = c_le
+            lamb_e = -1
+            q_1 = (c_e - c_s)/np.norm(C_le - C_ls)
+            z_1 = c_s + R*Rz(pi/2)*q_1
+            z_2 = c_e + R*Rz(pi/2)*q_1
+
+        z_3 = p_e
+        q_3 = Rz(chi_e)*e_s
 
         # package output into DubinsParameters class
         dp = DubinsParameters()
 
-        # TODO populate dp members here
+        dp.L = L_min
+        dp.c_s = c_s
+        dp.lamb_s = lamb_s
+        dp.c_e = c_e
+        dp.lamb_e = lamb_e
+        dp.z_1 = z_1
+        dp.q_1 = q_1
+        dp.z_2 = z_2
+        dp.z_3 = z_3
+        dp.q_3 = q_3
+        dp.case = i_min
+        dp.lengths = np.array([[L1, L2, L3, L4]])
+        dp.theta = th
+        dp.ell = ell
+        dp.c_rs = c_rs
+        dp.c_ls = c_ls
+        dp.c_re = c_re
+        dp.c_le = c_le
 
         return dp
 
@@ -350,7 +462,86 @@ class Algorithms:
         Copyright 2018 Utah State University
         """
 
-        # TODO Algorithm 8 goes here
+        if self.i is None:
+            self.i = 0
+            self.state = 0
+        if newpath:
+            # Initialize the waypoint index
+            self.i = 2
+            self.state = 1
+
+            # Check size of waypoints matrix
+            m, N = W.shape  # 'N' is number of waypoints and 'm' dimensions
+            assert N >= 3
+            assert m == 3
+        else:
+            [m, N] = W.shape
+            assert N >= 3
+            assert m == 3
+
+        # Determine the Dubins path parameters
+        dp = findDubinsParameters(W[:, self.i - 1], Chi[:, self.i - 1],
+                                  W[:, self.i], Chi[:, self.i], R)
+
+        # ... Follow start orbit until on the correct side of H1
+        if self.state == 1:
+            flag = 2
+            c = dp.c_s
+            rho = R
+            lamb = dp.lamb_s
+            r = mat([[math.nan], [math.nan], [math.nan]]).T
+            q = mat([[math.nan], [math.nan], [math.nan]]).T
+            if in_half_plane(p, dp.z_1, -dp.q_1):
+                self.state = 2
+
+        # ... Continue following the start orbit until in H1
+        elif self.state == 2:
+            flag = 2
+            c = dp.c_s
+            rho = R
+            lamb = dp.lamb_s
+            r = mat([[math.nan], [math.nan], [math.nan]]).T
+            q = mat([[math.nan], [math.nan], [math.nan]]).T
+            if in_half_plane(p, dp.z_1, dp.q_1):
+                self.state = 3
+
+        # ... Transition to straight-line path until H2
+        elif self.state == 3:
+            flag = 1
+            r = dp.z_1
+            q = dp.q_1
+            c = mat([[math.nan], [math.nan], [math.nan]]).T
+            lamb = math.nan
+            rho = math.nan
+            if in_half_plane(p, dp.z_2, dp.q_1):
+                self.state = 4
+
+        # ... Follow the end orbit until on the correct side of H3
+        elif self.state == 4:
+            flag = 2
+            c = dp.c_e
+            rho = R
+            lamb = dp.lamb_e
+            r = mat([[math.nan], [math.nan], [math.nan]]).T
+            q = mat([[math.nan], [math.nan], [math.nan]]).T
+            if in_half_plane(dp, dp.z_3, -dp.q_3):
+                self.state = 5
+
+        # state = 5
+        else:
+            flag = 2
+            c = dp.c_e
+            rho = R
+            lamb = dp.lamb_e
+            r = mat([[math.nan], [math.nan], [math.nan]]).T
+            q = mat([[math.nan], [math.nan], [math.nan]]).T
+            # ... Continue following the end oribit until in H3
+            if in_half_plane(p, dp.z_3, dp.q_3):
+                self.state = 1
+                if(self.i < N):
+                    self.i = self.i + 1
+                dp = findDubinsParameters(W[:, self.i - 1], Chi[:, self.i - 1],
+                                          W[:, self.i], Chi[:, self.i], R)
 
         return flag, r, q, c, rho, lamb, self.i, dp
 
