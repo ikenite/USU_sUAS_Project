@@ -273,12 +273,22 @@ class Algorithms:
         Copyright 2018 Utah State University
         """
 
+        #print("Beginning Calculations...")
+        #c_s = mat([[0], [0], [0]]).T
+        #print("matrix example: ", c_s)
         # Unpack variables
-        e_s = mat([[1], [0], [0]]).T
+        e_s = mat([[1], [0], [0]])
         P_s = np.squeeze(np.asarray(p_s))
         p_s_n, p_s_e, p_s_d = P_s[0], P_s[1], P_s[2]
         P_e = np.squeeze(np.asarray(p_e))
         p_e_n, p_e_e, p_e_d = P_e[0], P_e[1], P_e[2]
+        Chi_s = chi_s[0]
+        #print("chi_s = ", chi_s)
+        #print("Chi_s = ", Chi_s)
+        Chi_e = chi_e[0]
+        #print("chi_e = ", chi_e)
+        #print("Chi_e = ", Chi_e)
+        #print("\n")
 
         # Algorithm 7
 
@@ -288,34 +298,55 @@ class Algorithms:
 
         pi = math.pi
 
+        #print("Computing circle centers...")
         # Compute circle centers
-        c_chi_s = math.cos(chi_s)
-        s_chi_s = math.sin(chi_s)
-        c_chi_e = math.cos(chi_e)
-        s_chi_e = math.sin(chi_e)
-        c_rs = p_s + R*Rz(pi/2)*mat([[c_chi_s], [s_chi_s], [0]]).T
-        c_ls = p_s + R*Rz(-pi/2)*mat([[c_chi_s], [s_chi_s], [0]]).T
-        c_re = p_e + R*Rz(pi/2)*mat([[c_chi_e], [s_chi_e], [0]]).T
-        c_le = p_e + R*Rz(-pi/2)*mat([[c_chi_e], [s_chi_e], [0]]).T
+        c_chi_s = math.cos(Chi_s)
+        s_chi_s = math.sin(Chi_s)
+        c_chi_e = math.cos(Chi_e)
+        s_chi_e = math.sin(Chi_e)
+        #print("cos(chi_s) = ", c_chi_s)
+        #print("sin(chi_s) = ", s_chi_s)
+        #print("cos(chi_e) = ", c_chi_e)
+        #print("sin(chi_e) = ", s_chi_e)
+        c_rs = p_s + (R*np.matmul(Rz(pi/2), mat([[c_chi_s], [s_chi_s], [0]])).T)
+        c_ls = p_s + (R*np.matmul(Rz(-pi/2), mat([[c_chi_s], [s_chi_s], [0]])).T)
+        c_re = p_e + (R*np.matmul(Rz(pi/2), mat([[c_chi_e], [s_chi_e], [0]])).T)
+        c_le = p_e + (R*np.matmul(Rz(-pi/2), mat([[c_chi_e], [s_chi_e], [0]])).T)
+        #print("c_rs = ", c_rs)
+        #print("c_ls = ", c_ls)
+        #print("c_re = ", c_re)
+        #print("c_le = ", c_le)
+        #print("Circle Centers computered")
+        # print("\n")
 
         # ... convert to arrays...
+        print("Converting to arrays...")
         C_rs = np.squeeze(np.asarray(c_rs))
         C_ls = np.squeeze(np.asarray(c_ls))
         C_re = np.squeeze(np.asarray(c_re))
         C_le = np.squeeze(np.asarray(c_le))
+        #print("C_rs = ", C_rs)
+        #print("C_ls = ", C_ls)
+        #print("C_re = ", C_re)
+        #print("C_le = ", C_le)
+        #print("\n")
 
         # Compute path lengths
 
+        print("Computing path lengths...")
         # ... Case 1: R-S-R
-        th = np.angle(C_le - C_rs)
+        angle = C_le - C_rs
+        th = np.arctan2(angle[1], angle[0])
         L1 = (LA.norm(C_rs - C_re)
               + R*(2*pi + (th - pi/2) % (2*pi)
-              - (chi_s - pi/2) % (2*pi)) % (2*pi)
-              + R*(2*pi + (chi_e - pi/2) % (2*pi)
-              - (th - pi/2) % (2*pi)) % (2*pi))
+                   - (Chi_s - pi/2) % (2*pi)) % (2*pi)
+              + R*(2*pi + (Chi_e - pi/2) % (2*pi)
+                   - (th - pi/2) % (2*pi)) % (2*pi))
+        print("L1 (RSR) = ", L1)
 
         # ... Case 2: R-S-L
-        th = np.angle(C_le - C_rs)
+        angle = C_le - C_rs
+        th = np.arctan2(angle[1], angle[0])
         ell = LA.norm(C_le - C_rs)
         th2 = th - pi/2 + math.asin(2*R/ell)
         if ~np.isreal(th2):
@@ -323,92 +354,117 @@ class Algorithms:
         else:
             L2 = (math.sqrt(ell**2 - 4*(R**2))
                   + R*(2*pi + th2 % (2*pi)
-                       - (chi_s - pi/2) % (2*pi)) % (2*pi)
+                       - (Chi_s - pi/2) % (2*pi)) % (2*pi)
                   + R*(2*pi + (th2 + pi) % (2*pi)
-                       - (chi_e + pi/2) % (2*pi)) % (2*pi))
+                       - (Chi_e + pi/2) % (2*pi)) % (2*pi))
+        print("L2 (RSL) = ", L2)
 
         # ... Case 3: L-S-R
-        th = np.angle(C_re - C_ls)
-        ell = np.norm(C_re - C_ls)
+        angle = C_re - C_ls
+        th = np.arctan2(angle[1], angle[0])
+        ell = LA.norm(C_re - C_ls)
         th2 = math.acos(2*R/ell)
-        if ~np.isreal(th2):
-            L3 = math.nan
-        else:
-            L3 = (math.sqrt(ell**2 - 4*(R**2))
-                  + R*(2*pi + (chi_s + pi/2) % (2*pi)
-                       - (th + th2) % (2*pi)) % (2*pi)
-                  + R*(2*pi + (chi_e - pi/2) % (2*pi)
-                       - (th + th2 - pi/2) % (2*pi)) % (2*pi))
+        L3 = (math.sqrt(ell**2 - 4*(R**2))
+              + R*(2*pi + (Chi_s + pi/2) % (2*pi)
+                   - (th + th2) % (2*pi)) % (2*pi)
+              + R*(2*pi + (Chi_e - pi/2) % (2*pi)
+                   - (th + th2 - pi/2) % (2*pi)) % (2*pi))
+        print("L3 (LSR) = ", L3)
 
         # ... Case 4: L-S-L
-        th = np.angle(C_le - C_ls)
-        L4 = (np.norm(C_ls - C_le)
-              + R*(2*pi + (chi_s + pi/2) % (2*pi)
+        angle = C_le - C_ls
+        th = np.arctan2(angle[1], angle[0])
+        L4 = (LA.norm(C_ls - C_le)
+              + R*(2*pi + (Chi_s + pi/2) % (2*pi)
                    - (th + pi/2) % (2*pi)) % (2*pi)
               + R*(2*pi + (th + pi/2) % (2*pi)
-                   - (chi_e + pi/2) % (2*pi)) % (2*pi))
+                   - (Chi_e + pi/2) % (2*pi)) % (2*pi))
+        print("L4 (LSL) = ", L4)
+        print("Path Lengths computed \n")
 
         # Define parameters for minimum length path
-
-        c_s = mat([[math.nan], [math.nan], [math.nan]]).T
-        lamb_s = math.nan
-        c_e = mat([[math.nan], [math.nan], [math.nan]]).T
-        lamb_e = math.nan
-        q_1 = mat([[math.nan], [math.nan], [math.nan]]).T
-        z_1 = mat([[math.nan], [math.nan], [math.nan]]).T
-        z_2 = mat([[math.nan], [math.nan], [math.nan]]).T
 
         L_list = [L1, L2, L3, L4]
         L_min = min(L_list)
 
         if L_min == L1:
+            print("L1 is the shortest")
             i_min = 1
             c_s = c_rs
             lamb_s = 1
             c_e = c_re
             lamb_e = 1
-            q_1 = (c_e - c_s)/np.norm(C_re - C_rs)
+            q_1 = (c_e - c_s)/LA.norm(C_re - C_rs)
+            print("q_1 = ", q_1)
             z_1 = c_s + R*Rz(-pi/2)*q_1
+            print("z_1 = ", z_1)
             z_2 = c_e + R*Rz(-pi/2)*q_1
+            print("z_2 = ", z_2)
 
         elif L_min == L2:
+            print("L2 is the shortest")
             i_min = 2
             c_s = c_rs
             lamb_s = 1
             c_e = c_le
             lamb_e = -1
-            ell = np.norm(C_le - C_rs)
-            th = np.angle(C_le - C_rs)
+            ell = LA.norm(C_le - C_rs)
+            angle = C_le - C_rs
+            th = np.arctan2(angle[1], angle[0])
             th2 = th - pi/2 + math.asin(2*R/ell)
-            q_1 = Rz(th2+pi/2)*e_s
-            z_1 = c_s + R*Rz(th2)*e_s
-            z_2 = c_e + R*Rz(th2 + pi)*e_s
+            q_1 = (Rz(th2+pi/2)*e_s).T
+            print("q_1 = ", q_1)
+            z_1 = c_s + (R*Rz(th2)*e_s).T
+            print("z_1 = ", z_1)
+            z_2 = c_e + (R*Rz(th2 + pi)*e_s).T
+            print("z_2 = ", z_2)
 
         elif L_min == L3:
+            print("L3 is the shortest")
             i_min = 3
             c_s = c_ls
             lamb_s = -1
             c_e = c_re
             lamb_e = 1
-            ell = np.norm(C_re - C_ls)
-            th = np.angle(C_re - C_ls)
+            ell = LA.norm(C_re - C_ls)
+            angle = C_re - C_ls
+            th = np.arctan2(angle[1], angle[0])
             th2 = math.acos(2*R/ell)
             q_1 = Rz(th+th2-pi/2)*e_s
+            print("q_1 = ", q_1)
             z_1 = c_s + R*Rz(th + th2)*e_s
+            print("z_1 = ", z_1)
             z_2 = c_e + R*Rz(th + th2 - pi)*e_s
+            print("z_2 = ", z_2)
 
         elif L_min == L4:
+            print("L4 is the shortest")
             i_min = 4
             c_s = c_ls
             lamb_s = -1
             c_e = c_le
             lamb_e = -1
-            q_1 = (c_e - c_s)/np.norm(C_le - C_ls)
+            q_1 = (c_e - c_s)/LA.norm(C_le - C_ls)
+            print("q_1 = ", q_1)
             z_1 = c_s + R*Rz(pi/2)*q_1
+            print("z_1 = ", z_1)
             z_2 = c_e + R*Rz(pi/2)*q_1
+            print("z_2 = ", z_2)
 
+        """
+        else:
+            c_s = mat([[math.nan], [math.nan], [math.nan]]).T
+            lamb_s = math.nan
+            c_e = mat([[math.nan], [math.nan], [math.nan]]).T
+            lamb_e = math.nan
+            q_1 = mat([[math.nan], [math.nan], [math.nan]]).T
+            z_1 = mat([[math.nan], [math.nan], [math.nan]]).T
+            z_2 = mat([[math.nan], [math.nan], [math.nan]]).T
+        """
         z_3 = p_e
+        print("z_3 = ", z_3)
         q_3 = Rz(chi_e)*e_s
+        print("q_3 = ", q_1)
 
         # package output into DubinsParameters class
         dp = DubinsParameters()
@@ -418,9 +474,9 @@ class Algorithms:
         dp.lamb_s = lamb_s
         dp.c_e = c_e
         dp.lamb_e = lamb_e
-        dp.z_1 = z_1
-        dp.q_1 = q_1
-        dp.z_2 = z_2
+        dp.z_1 = z_1.T
+        dp.q_1 = q_1.T
+        dp.z_2 = z_2.T
         dp.z_3 = z_3
         dp.q_3 = q_3
         dp.case = i_min
@@ -479,9 +535,29 @@ class Algorithms:
             assert N >= 3
             assert m == 3
 
+        print("Calculating Start Position...")
         # Determine the Dubins path parameters
-        dp = findDubinsParameters(W[:, self.i - 1], Chi[:, self.i - 1],
-                                  W[:, self.i], Chi[:, self.i], R)
+        p_s = mat([[W[0, self.i - 1]],
+                   [W[1, self.i - 1]],
+                   [W[2, self.i - 1]]]).T
+        print("Calculating Start Attitude...")
+        chi_s = Chi[self.i - 1],
+        print("Calculating End Position...")
+        p_e = mat([[W[0, self.i]],
+                   [W[1, self.i]],
+                   [W[2, self.i]]]).T
+        print("Calculating End Attitude...")
+        chi_e = Chi[self.i]
+
+        print("Finding Dubins Parameters...\n")
+        dp = self.findDubinsParameters(p_s, chi_s, p_e, chi_e, R)
+        print("Dubins Parameters found\n")
+
+        r = mat([[0], [0], [0]]).T
+        q = mat([[0], [0], [0]]).T
+        c = mat([[0], [0], [0]]).T
+        rho = 0
+        lamb = 0
 
         # ... Follow start orbit until on the correct side of H1
         if self.state == 1:
@@ -489,8 +565,6 @@ class Algorithms:
             c = dp.c_s
             rho = R
             lamb = dp.lamb_s
-            r = mat([[math.nan], [math.nan], [math.nan]]).T
-            q = mat([[math.nan], [math.nan], [math.nan]]).T
             if in_half_plane(p, dp.z_1, -dp.q_1):
                 self.state = 2
 
@@ -500,8 +574,6 @@ class Algorithms:
             c = dp.c_s
             rho = R
             lamb = dp.lamb_s
-            r = mat([[math.nan], [math.nan], [math.nan]]).T
-            q = mat([[math.nan], [math.nan], [math.nan]]).T
             if in_half_plane(p, dp.z_1, dp.q_1):
                 self.state = 3
 
@@ -510,9 +582,6 @@ class Algorithms:
             flag = 1
             r = dp.z_1
             q = dp.q_1
-            c = mat([[math.nan], [math.nan], [math.nan]]).T
-            lamb = math.nan
-            rho = math.nan
             if in_half_plane(p, dp.z_2, dp.q_1):
                 self.state = 4
 
@@ -522,8 +591,6 @@ class Algorithms:
             c = dp.c_e
             rho = R
             lamb = dp.lamb_e
-            r = mat([[math.nan], [math.nan], [math.nan]]).T
-            q = mat([[math.nan], [math.nan], [math.nan]]).T
             if in_half_plane(dp, dp.z_3, -dp.q_3):
                 self.state = 5
 
@@ -540,8 +607,7 @@ class Algorithms:
                 self.state = 1
                 if(self.i < N):
                     self.i = self.i + 1
-                dp = findDubinsParameters(W[:, self.i - 1], Chi[:, self.i - 1],
-                                          W[:, self.i], Chi[:, self.i], R)
+                dp = self.findDubinsParameters(p_s, chi_s, p_e, chi_e, R)
 
         return flag, r, q, c, rho, lamb, self.i, dp
 

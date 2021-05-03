@@ -1,4 +1,5 @@
 import numpy as np
+import numbers
 from mat import mat
 
 
@@ -21,8 +22,13 @@ def in_half_plane(p, r, n):
     Determine whether p is in the half plane be calculating the sign of the
     dot product.
     """
-    if ((p - r).T * n) >= 0:
-        return 1
+    print("p = ", p)
+    print("r = ", r)
+    print("n = ", n)
+    if numbers.(any.p) && numbers.(any.r) && numbers.(any.n):
+        print("p - r = ", (p - r).T)
+        if ((p - r).T * n) >= 0:
+            return 1
     else:
         return 0
 
