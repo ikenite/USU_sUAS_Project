@@ -289,6 +289,9 @@ class Algorithms:
         #print("chi_e = ", chi_e)
         #print("Chi_e = ", Chi_e)
         #print("\n")
+        print("p_s = ", p_s)
+        print("p_e = ", p_e)
+
 
         # Algorithm 7
 
@@ -320,7 +323,7 @@ class Algorithms:
         # print("\n")
 
         # ... convert to arrays...
-        print("Converting to arrays...")
+        #print("Converting to arrays...")
         C_rs = np.squeeze(np.asarray(c_rs))
         C_ls = np.squeeze(np.asarray(c_ls))
         C_re = np.squeeze(np.asarray(c_re))
@@ -333,7 +336,7 @@ class Algorithms:
 
         # Compute path lengths
 
-        print("Computing path lengths...")
+        #print("Computing path lengths...")
         # ... Case 1: R-S-R
         angle = C_le - C_rs
         th = np.arctan2(angle[1], angle[0])
@@ -380,7 +383,7 @@ class Algorithms:
               + R*(2*pi + (th + pi/2) % (2*pi)
                    - (Chi_e + pi/2) % (2*pi)) % (2*pi))
         print("L4 (LSL) = ", L4)
-        print("Path Lengths computed \n")
+        #print("Path Lengths computed \n")
 
         # Define parameters for minimum length path
 
@@ -391,14 +394,16 @@ class Algorithms:
             print("L1 is the shortest")
             i_min = 1
             c_s = c_rs
+            print("c_s = ", c_s)
             lamb_s = 1
             c_e = c_re
+            print("c_e = ", c_e)
             lamb_e = 1
-            q_1 = (c_e - c_s)/LA.norm(C_re - C_rs)
+            q_1 = ((c_e - c_s)/LA.norm(C_re - C_rs))
             print("q_1 = ", q_1)
-            z_1 = c_s + R*Rz(-pi/2)*q_1
+            z_1 = c_s + (R*Rz(-pi/2)*q_1.T).T
             print("z_1 = ", z_1)
-            z_2 = c_e + R*Rz(-pi/2)*q_1
+            z_2 = c_e + (R*Rz(-pi/2)*q_1.T).T
             print("z_2 = ", z_2)
 
         elif L_min == L2:
@@ -413,28 +418,30 @@ class Algorithms:
             th = np.arctan2(angle[1], angle[0])
             th2 = th - pi/2 + math.asin(2*R/ell)
             q_1 = (Rz(th2+pi/2)*e_s).T
-            print("q_1 = ", q_1)
+            #print("q_1 = ", q_1)
             z_1 = c_s + (R*Rz(th2)*e_s).T
-            print("z_1 = ", z_1)
+            #print("z_1 = ", z_1)
             z_2 = c_e + (R*Rz(th2 + pi)*e_s).T
-            print("z_2 = ", z_2)
+            #print("z_2 = ", z_2)
 
         elif L_min == L3:
             print("L3 is the shortest")
             i_min = 3
             c_s = c_ls
+            print("c_s = ", c_s)
             lamb_s = -1
             c_e = c_re
+            print("c_e = ", c_e)
             lamb_e = 1
             ell = LA.norm(C_re - C_ls)
             angle = C_re - C_ls
             th = np.arctan2(angle[1], angle[0])
             th2 = math.acos(2*R/ell)
-            q_1 = Rz(th+th2-pi/2)*e_s
+            q_1 = (Rz(th+th2-pi/2)*e_s).T
             print("q_1 = ", q_1)
-            z_1 = c_s + R*Rz(th + th2)*e_s
+            z_1 = c_s + (R*Rz(th + th2)*e_s).T
             print("z_1 = ", z_1)
-            z_2 = c_e + R*Rz(th + th2 - pi)*e_s
+            z_2 = c_e + (R*Rz(th + th2 - pi)*e_s).T
             print("z_2 = ", z_2)
 
         elif L_min == L4:
@@ -444,11 +451,11 @@ class Algorithms:
             lamb_s = -1
             c_e = c_le
             lamb_e = -1
-            q_1 = (c_e - c_s)/LA.norm(C_le - C_ls)
+            q_1 = ((c_e - c_s)/LA.norm(C_le - C_ls))
             print("q_1 = ", q_1)
-            z_1 = c_s + R*Rz(pi/2)*q_1
+            z_1 = c_s + (R*Rz(pi/2)*q_1.T).T
             print("z_1 = ", z_1)
-            z_2 = c_e + R*Rz(pi/2)*q_1
+            z_2 = c_e + (R*Rz(pi/2)*q_1.T).T
             print("z_2 = ", z_2)
 
         """
@@ -461,7 +468,7 @@ class Algorithms:
             z_1 = mat([[math.nan], [math.nan], [math.nan]]).T
             z_2 = mat([[math.nan], [math.nan], [math.nan]]).T
         """
-        z_3 = p_e
+        z_3 = p_e.T
         print("z_3 = ", z_3)
         q_3 = Rz(chi_e)*e_s
         print("q_3 = ", q_1)
@@ -523,7 +530,7 @@ class Algorithms:
             self.state = 0
         if newpath:
             # Initialize the waypoint index
-            self.i = 2
+            self.i = 1
             self.state = 1
 
             # Check size of waypoints matrix
@@ -535,29 +542,32 @@ class Algorithms:
             assert N >= 3
             assert m == 3
 
-        print("Calculating Start Position...")
+        #print("Calculating Start Position...")
         # Determine the Dubins path parameters
         p_s = mat([[W[0, self.i - 1]],
                    [W[1, self.i - 1]],
                    [W[2, self.i - 1]]]).T
-        print("Calculating Start Attitude...")
+        #print("Calculating Start Attitude...")
         chi_s = Chi[self.i - 1],
-        print("Calculating End Position...")
+        #print("Calculating End Position...")
         p_e = mat([[W[0, self.i]],
                    [W[1, self.i]],
                    [W[2, self.i]]]).T
-        print("Calculating End Attitude...")
+        #print("Calculating End Attitude...")
         chi_e = Chi[self.i]
+        #print("W = ", W)
 
-        print("Finding Dubins Parameters...\n")
+        #print("Finding Dubins Parameters...\n")
         dp = self.findDubinsParameters(p_s, chi_s, p_e, chi_e, R)
-        print("Dubins Parameters found\n")
+        #print("Dubins Parameters found\n")
 
         r = mat([[0], [0], [0]]).T
         q = mat([[0], [0], [0]]).T
         c = mat([[0], [0], [0]]).T
         rho = 0
         lamb = 0
+
+        print("state = ", self.state)
 
         # ... Follow start orbit until on the correct side of H1
         if self.state == 1:
@@ -591,7 +601,7 @@ class Algorithms:
             c = dp.c_e
             rho = R
             lamb = dp.lamb_e
-            if in_half_plane(dp, dp.z_3, -dp.q_3):
+            if in_half_plane(p, dp.z_3, -dp.q_3):
                 self.state = 5
 
         # state = 5
@@ -600,8 +610,6 @@ class Algorithms:
             c = dp.c_e
             rho = R
             lamb = dp.lamb_e
-            r = mat([[math.nan], [math.nan], [math.nan]]).T
-            q = mat([[math.nan], [math.nan], [math.nan]]).T
             # ... Continue following the end oribit until in H3
             if in_half_plane(p, dp.z_3, dp.q_3):
                 self.state = 1

@@ -33,7 +33,7 @@ class UAV(MavrosTestCommon):
         self.chi_inf = pi / 2
         self.k_path = 0.0125
         self.k_orbit = 3.5
-        self.R = 50  # fillet radius (m) (This should be set to the min radius)
+        self.R = 30  # fillet radius (m) (This should be set to the min radius)
         # ----------------------------
 
         self.path_follower = path_follower

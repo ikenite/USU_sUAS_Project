@@ -25,10 +25,9 @@ def in_half_plane(p, r, n):
     print("p = ", p)
     print("r = ", r)
     print("n = ", n)
-    if numbers.(any.p) && numbers.(any.r) && numbers.(any.n):
-        print("p - r = ", (p - r).T)
-        if ((p - r).T * n) >= 0:
-            return 1
+    print("p - r = ", (p - r).T)
+    if ((p - r).T * n) >= 0:
+        return 1
     else:
         return 0
 
